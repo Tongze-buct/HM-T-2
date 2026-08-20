@@ -94,7 +94,6 @@ FAR = sum(states_RT(1:fp-1) > slice_op)/(fp-1)*100;
 FDR = sum(states_RT(fp:end) > slice_op)/numel(states_RT(fp:end))*100;
 % FAR = sum(HMT2_RT(1:fp-1) > 0)/(fp-1)*100;
 % FDR = sum(HMT2_RT(fp:end) > 0)/numel(HMT2_RT(fp:end))*100;
-Jth = ones(1,N_test)*chi2inv(0.99,v); 
 
 fprintf('Real-time simulation finished.\n');
 fprintf('FAR = %.2f%%\n',FAR);
