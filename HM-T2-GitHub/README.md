@@ -29,6 +29,67 @@ new process sample x_k
                 state_k and HM-T^2_k
 ```
 
+## Pseudocode
+
+The following pseudocode reproduces Algorithms 1 and 2 from the companion paper, with mathematical notation adapted to plain text. Equation numbers refer to the paper. Algorithm 2 describes the paper's hyperparameter-selection procedure; the demo uses the supplied parameter files rather than repeating this procedure.
+
+### Algorithm 1: Fault detection based on HM-T²
+
+```text
+Input: HMM model parameters H = (A, B, pi),
+       number of normal substates m.
+Initialize an empty vector Z.
+
+loop
+    For a real-time measured sample x_t, compute T²_t using
+    a predefined algorithm such as PCA or CCA.
+    Calculate the observation o_k corresponding to T²_t.
+    Update the normal-to-fault transition probability
+    using Eqs. (26) and (28).
+    Z <- [Z, o_k].
+    Use the Viterbi algorithm to compute the prior probabilities
+    and state index: i*_t <- Viterbi(H, Z).
+    If HM-T² > 1 (equivalent to i*_t = m + 1), report faulty;
+    otherwise, report normal.
+    if length(Z) > L* then
+        Reset Z to an empty vector.
+    end if
+end loop
+```
+
+Here, `L*` is the preset observation-sequence length threshold. Apply the transition probability update (TPU) only when its applicability conditions in the paper are satisfied.
+
+### Algorithm 2: Configuring the Hyperparameters
+
+```text
+Input: Candidate sets U for u and M for m,
+       HMM model parameters H = (A, B, pi),
+       training-phase observation sequence Z_train.
+Initialize g = 0, theta = 0, l = 0.
+Add noise to the index at intervals of several samples
+until it exceeds the chi-squared control limit chi²_varsigma(v).
+
+for m in M do
+    theta <- theta + 1.
+    for u in U do
+        l <- l + 1.
+        for o in Z_train do
+            Compute the state index i*_t corresponding to o.
+            if i*_t = m + 1 then
+                g <- g + 1.
+            end if
+        end for
+        FAR(theta, l) <- g / length(Z_train).
+        g <- 0.
+    end for
+end for
+
+Determine P*, the set of all (m, u) pairs minimizing FAR.
+Select m as the largest m among the pairs in P*.
+Select u as the smallest u among the pairs in P* with this m.
+Output: m, u.
+```
+
 ## Quick start
 
 Run:
